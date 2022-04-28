@@ -1,27 +1,39 @@
 package me.dcun.demorestapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.dcun.common.RestDocsConfiguration;
 import me.dcun.demorestapi.events.Event;
 import me.dcun.demorestapi.events.EventDto;
 import me.dcun.demorestapi.events.EventStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class)
+@ActiveProfiles("test")
 public class EventControllerTests {
     @Autowired
     MockMvc mockMvc;
@@ -35,8 +47,8 @@ public class EventControllerTests {
         EventDto eventDto = EventDto.builder()
                 .name("spring")
                 .description("REST API")
-                .beginEnrollmentDateTime(LocalDateTime.of(2022, 4, 27, 11, 30))
-                .closeEnrollmentDateTime(LocalDateTime.of(2022, 4, 28, 11, 30))
+                .beginEnrollmentDateTime(LocalDateTime.of(2022, 3, 27, 11, 30))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022, 3, 28, 11, 30))
                 .beginEventDateTime(LocalDateTime.of(2022, 4, 27, 11, 30))
                 .endEventDateTime(LocalDateTime.of(2022, 4, 28, 11, 30))
                 .basePrice(100)
@@ -54,7 +66,60 @@ public class EventControllerTests {
                 .andExpect(jsonPath("id").exists())
                 .andExpect(header().exists(HttpHeaders.LOCATION))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.toString()));
+                .andExpect(jsonPath("free").value(false))
+                .andExpect(jsonPath("offline").value(true))
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.toString()))
+                .andDo(document("create-event",
+                        links(
+                                linkWithRel("query-events").description("link to query events"),
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("update-event").description("link to update event"),
+                                linkWithRel("profile").description("link to profile")
+                        ),
+                        requestHeaders(
+                                headerWithName("Content-Type").description("des content type"),
+                                headerWithName("Accept").description("des accept")
+                        ),
+                        requestFields(
+                                fieldWithPath("name").description("des name"),
+                                fieldWithPath("description").description("des description"),
+                                fieldWithPath("beginEnrollmentDateTime").description("des beginEnrollmentDateTime"),
+                                fieldWithPath("closeEnrollmentDateTime").description("des closeEnrollmentDateTime"),
+                                fieldWithPath("beginEventDateTime").description("des beginEventDateTime"),
+                                fieldWithPath("endEventDateTime").description("des endEventDateTime"),
+                                fieldWithPath("basePrice").description("des basePrice"),
+                                fieldWithPath("maxPrice").description("des maxPrice"),
+                                fieldWithPath("limitOfEnrollment").description("des limitOfEnrollment"),
+                                fieldWithPath("location").description("des location")
+                        ),
+                        responseHeaders(
+                                headerWithName("Location").description("des location"),
+                                headerWithName("Content-Type").description("des content type")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("des id"),
+                                fieldWithPath("name").description("des name"),
+                                fieldWithPath("description").description("des description"),
+                                fieldWithPath("beginEnrollmentDateTime").description("des beginEnrollmentDateTime"),
+                                fieldWithPath("closeEnrollmentDateTime").description("des closeEnrollmentDateTime"),
+                                fieldWithPath("beginEventDateTime").description("des beginEventDateTime"),
+                                fieldWithPath("endEventDateTime").description("des endEventDateTime"),
+                                fieldWithPath("basePrice").description("des basePrice"),
+                                fieldWithPath("maxPrice").description("des maxPrice"),
+                                fieldWithPath("limitOfEnrollment").description("des limitOfEnrollment"),
+                                fieldWithPath("location").description("des location"),
+                                fieldWithPath("free").description("des free"),
+                                fieldWithPath("offline").description("des offline"),
+                                fieldWithPath("eventStatus").description("des eventStatus"),
+                                fieldWithPath("_links.query-events.href").description("des _links.query-events"),
+                                fieldWithPath("_links.self.href").description("des _links.self"),
+                                fieldWithPath("_links.update-event.href").description("des _links.update-event"),
+                                fieldWithPath("_links.profile.href").description("des _links.profile")
+                        )
+                ));
     }
 
     @Test
@@ -113,6 +178,10 @@ public class EventControllerTests {
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
-                .andExpect(status().isBadRequest());
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists());
     }
 }
