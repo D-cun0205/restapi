@@ -1,4 +1,4 @@
-package me.dcun.demorestapi;
+package me.dcun;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
