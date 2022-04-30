@@ -1,14 +1,8 @@
-package me.dcun.demorestapi;
+package me.dcun.demorestapi.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import me.dcun.common.BaseControllerTest;
-import me.dcun.demorestapi.events.Event;
-import me.dcun.demorestapi.events.EventDto;
-import me.dcun.demorestapi.events.EventRepository;
-import me.dcun.demorestapi.events.EventStatus;
+import me.dcun.demorestapi.common.BaseControllerTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -27,12 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class EventControllerTests extends BaseControllerTest {
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    ModelMapper modelMapper;
-
     @Autowired
     EventRepository eventRepository;
 

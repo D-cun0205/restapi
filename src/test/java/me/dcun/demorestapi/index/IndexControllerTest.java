@@ -1,6 +1,6 @@
-package me.dcun.index;
+package me.dcun.demorestapi.index;
 
-import me.dcun.common.BaseControllerTest;
+import me.dcun.demorestapi.common.BaseControllerTest;
 import org.junit.jupiter.api.Test;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

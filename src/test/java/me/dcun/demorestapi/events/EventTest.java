@@ -1,9 +1,7 @@
-package me.dcun.demorestapi;
+package me.dcun.demorestapi.events;
 
-import me.dcun.demorestapi.events.Event;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
