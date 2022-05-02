@@ -1,5 +1,6 @@
 package me.dcun.demorestapi.accounts;
 
+import me.dcun.demorestapi.common.AppProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,33 +24,23 @@ class AccountServiceTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    AppProperties appProperties;
+
     @Test
     void findByUsername() {
-        //Given
-        String username = "dcun@rest.api";
-        String password = "dcun";
-        Account account = Account.builder()
-                .email(username)
-                .password(password)
-                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-                .build();
-        this.accountService.saveAccount(account);
-
         //When
         UserDetailsService userDetailsService = this.accountService;
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(appProperties.getAdminUsername());
 
         //Then
-        assertThat(passwordEncoder.matches(password, userDetails.getPassword())).isTrue();
+        assertThat(passwordEncoder.matches(appProperties.getAdminPassword(), userDetails.getPassword())).isTrue();
     }
 
     @Test
     void expectedExceptionFindByUsername() {
-        String username = "dcun@rest.rest";
         UsernameNotFoundException exceptionWasExpected = assertThrows(UsernameNotFoundException.class, () -> {
-            this.accountService.loadUserByUsername(username);
+            this.accountService.loadUserByUsername("notJoinId@email.com");
         }, "UsernameNotFoundException was expected");
-
-        assertThat(exceptionWasExpected.getMessage()).isEqualTo(username);
     }
 }
